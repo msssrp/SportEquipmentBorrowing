@@ -7,6 +7,7 @@ import (
 )
 
 type UserService interface {
+	GetAllUsers() ([]*User, error)
 	GetUserByID(id primitive.ObjectID) (*User, error)
 	CreateUser(user *User) error
 	UpdateUser(user *User) error
@@ -23,9 +24,13 @@ func NewUserService(userRepo UserRepository) UserService {
 	}
 }
 
+func (s *userService) GetAllUsers() ([]*User, error) {
+	return s.userRepo.GetAll()
+}
+
 func (s *userService) GetUserByID(id primitive.ObjectID) (*User, error) {
-	if id != primitive.NilObjectID {
-		return nil, errors.New("invalid id type")
+	if id == primitive.NilObjectID {
+		return nil, errors.New("id is null please provide id")
 	}
 	return s.userRepo.GetByID(id)
 }
@@ -80,8 +85,8 @@ func (s *userService) UpdateUser(user *User) error {
 }
 
 func (s *userService) DeleteUser(id primitive.ObjectID) error {
-	if id != primitive.NilObjectID {
-		return errors.New("invalid id type")
+	if id == primitive.NilObjectID {
+		return errors.New("invalid id please provide id")
 	}
 	return s.userRepo.DeleteByID(id)
 }

@@ -7,6 +7,7 @@ import (
 )
 
 type EquipmentService interface {
+	GetAllEquipments() ([]*Equipment, error)
 	GetEquipmentByID(id primitive.ObjectID) (*Equipment, error)
 	CreateEquipment(equipment *Equipment) error
 	UpdateEquipment(equipment *Equipment) error
@@ -23,9 +24,13 @@ func NewequipmentService(equipmentRepo EquipmentRepository) EquipmentService {
 	}
 }
 
+func (s *equipmentService) GetAllEquipments() ([]*Equipment, error) {
+	return s.equipmentRepo.GetAll()
+}
+
 func (s *equipmentService) GetEquipmentByID(id primitive.ObjectID) (*Equipment, error) {
-	if id != primitive.NilObjectID {
-		return nil, errors.New("invalid id type")
+	if id == primitive.NilObjectID {
+		return nil, errors.New("invalid id please provide id")
 	}
 	return s.equipmentRepo.GetByID(id)
 }
@@ -77,8 +82,8 @@ func (s *equipmentService) UpdateEquipment(equipment *Equipment) error {
 }
 
 func (s *equipmentService) DeleteEquipment(id primitive.ObjectID) error {
-	if id != primitive.NilObjectID {
-		return errors.New("invalid id type")
+	if id == primitive.NilObjectID {
+		return errors.New("invalid id please provide id")
 	}
 	return s.equipmentRepo.DeleteByID(id)
 }

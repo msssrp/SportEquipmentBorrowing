@@ -39,7 +39,7 @@ func (s *borrowingService) CreateBorrowing(borrowing *Borrowing) error {
 		return errors.New("borrowing is nil")
 	}
 
-	if borrowing.User_id == primitive.NilObjectID || borrowing.Id == primitive.NilObjectID || borrowing.Status == "" || borrowing.Borrow_date.IsZero() || borrowing.Return_date.IsZero() {
+	if borrowing.User_id == primitive.NilObjectID || borrowing.Equipment_id == primitive.NilObjectID || borrowing.Status == "" || borrowing.Borrow_date.IsZero() || borrowing.Return_date.IsZero() {
 		return errors.New("all the fields are required please provide all the fields")
 	}
 	return s.borrowingRepo.Create(borrowing)
@@ -101,24 +101,16 @@ func (s *borrowingService) GetBorrowingsByUserID(userID primitive.ObjectID) ([]*
 }
 
 func (s *borrowingService) GetBorrowingID(id primitive.ObjectID) (primitive.ObjectID, error) {
-	if id != primitive.NilObjectID {
-		return primitive.NilObjectID, errors.New("invalid id type")
+	if id == primitive.NilObjectID {
+		return primitive.NilObjectID, errors.New("invalid id please provide id")
 	}
 
 	return id, nil
 }
 
 func (s *borrowingService) GetUserID(id primitive.ObjectID) (primitive.ObjectID, error) {
-	if id != primitive.NilObjectID {
-		return primitive.NilObjectID, errors.New("invalid id type")
-	}
-
-	return id, nil
-}
-
-func (s *borrowingService) GetborrowingID(id primitive.ObjectID) (primitive.ObjectID, error) {
-	if id != primitive.NilObjectID {
-		return primitive.NilObjectID, errors.New("invalid id type")
+	if id == primitive.NilObjectID {
+		return primitive.NilObjectID, errors.New("invalid id please provide id")
 	}
 
 	return id, nil
