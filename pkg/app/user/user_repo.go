@@ -8,4 +8,5 @@ type UserRepository interface {
 	Create(user *User) error
 	Update(user *User) error
 	DeleteByID(id primitive.ObjectID) error
+	SignIn(username string, password string) (string, error)
 }

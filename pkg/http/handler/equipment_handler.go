@@ -28,6 +28,7 @@ type EquipmentInput struct {
 	Image_url          string `json:"image_url"`
 }
 
+//Get
 func (h *EquipmentHandler) HandlerGetEquipments(c *gin.Context) {
 	equipments, err := h.app.EquipmentService.GetAllEquipments()
 	if err != nil {
@@ -53,6 +54,7 @@ func (h *EquipmentHandler) HandlerGetEquipmentByID(c *gin.Context) {
 	c.JSON(http.StatusOK, equipment)
 }
 
+//Post
 func (h *EquipmentHandler) HandlerCreateEquipment(c *gin.Context) {
 	var equipmentInput EquipmentInput
 
@@ -81,6 +83,7 @@ func (h *EquipmentHandler) HandlerCreateEquipment(c *gin.Context) {
 
 }
 
+//Put
 func (h *EquipmentHandler) HandlerUpdateEquipment(c *gin.Context) {
 	equipmentIDsrt := c.Param("id")
 
@@ -115,6 +118,7 @@ func (h *EquipmentHandler) HandlerUpdateEquipment(c *gin.Context) {
 	c.JSON(http.StatusOK, equipment)
 }
 
+//Delete
 func (h *EquipmentHandler) HandlerDeleteEquipment(c *gin.Context) {
 	equipmentIDStr := c.Param("id")
 

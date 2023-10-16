@@ -1,11 +1,13 @@
 package handler
 
 import (
+	"errors"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/msssrp/SportEquipmentBorrowing/pkg/app"
 	"github.com/msssrp/SportEquipmentBorrowing/pkg/app/user"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"net/http"
 )
 
 type UserHandler struct {
@@ -29,6 +31,11 @@ type UserInput struct {
 	Roles        []string `json:"roles"`
 }
 
+type UserSignInInput struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 //Get
 func (h *UserHandler) HandlerGetUsers(c *gin.Context) {
 	users, err := h.app.UserService.GetAllUsers()
@@ -40,11 +47,13 @@ func (h *UserHandler) HandlerGetUsers(c *gin.Context) {
 }
 
 func (h *UserHandler) HandlerGetUserByID(c *gin.Context) {
+
 	userIDsrt := c.Param("id")
 
 	userID, err := primitive.ObjectIDFromHex(userIDsrt)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
+		return
 	}
 	user, err := h.app.UserService.GetUserByID(userID)
 	if err != nil {
@@ -87,14 +96,36 @@ func (h *UserHandler) HandlerCreateUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"message": "User created successfully"})
+}
+
+func (h *UserHandler) HandlerSignIn(c *gin.Context) {
+	var signInInput UserSignInInput
+	if err := c.ShouldBindJSON(&signInInput); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	token, err := h.app.UserService.UserSignIn(signInInput.Username, signInInput.Password)
+	if err != nil {
+		var errInvalidCredentials = errors.New("Invalid username or password")
+		if err == errInvalidCredentials {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
+			return
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, token)
 
 }
 
 //Put
 func (h *UserHandler) HandlerUpdateUser(c *gin.Context) {
-	userIDStr := c.Param("id")
 
-	userID, err := primitive.ObjectIDFromHex(userIDStr)
+	userIDsrt := c.Param("id")
+
+	userID, err := primitive.ObjectIDFromHex(userIDsrt)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
@@ -128,9 +159,10 @@ func (h *UserHandler) HandlerUpdateUser(c *gin.Context) {
 
 //Delete
 func (h *UserHandler) HandlerDeleteUser(c *gin.Context) {
-	userIDStr := c.Param("id")
 
-	userID, err := primitive.ObjectIDFromHex(userIDStr)
+	userIDsrt := c.Param("id")
+
+	userID, err := primitive.ObjectIDFromHex(userIDsrt)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return

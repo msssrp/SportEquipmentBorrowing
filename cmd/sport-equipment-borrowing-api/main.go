@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/msssrp/SportEquipmentBorrowing/function"
 	"github.com/msssrp/SportEquipmentBorrowing/pkg/app"
 	"github.com/msssrp/SportEquipmentBorrowing/pkg/app/borrowing"
 	"github.com/msssrp/SportEquipmentBorrowing/pkg/app/equipment"
@@ -17,8 +18,13 @@ func main() {
 		panic(err)
 	}
 
+	secretKey, err := function.GetDotEnv("SECRET")
+	if err != nil {
+		panic(err)
+	}
+
 	//init all repositories
-	userRepo := user.NewUserRepositoryMongo(mongoDB.Client(), "SportEquipmentBorrowing", "users")
+	userRepo := user.NewUserRepositoryMongo(mongoDB.Client(), "SportEquipmentBorrowing", "users", []byte(secretKey))
 	equipmentRepo := equipment.NewEquipmentRepositoryMongo(mongoDB.Client(), "SportEquipmentBorrowing", "equipments")
 	borrowingRepo := borrowing.NewBorrowingRepositoryMongo(mongoDB.Client(), "SportEquipmentBorrowing", "borrowing")
 	//init app
