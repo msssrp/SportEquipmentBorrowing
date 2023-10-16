@@ -17,9 +17,11 @@ func main() {
 		panic(err)
 	}
 
+	//init all repositories
 	userRepo := user.NewUserRepositoryMongo(mongoDB.Client(), "SportEquipmentBorrowing", "users")
 	equipmentRepo := equipment.NewEquipmentRepositoryMongo(mongoDB.Client(), "SportEquipmentBorrowing", "equipments")
 	borrowingRepo := borrowing.NewBorrowingRepositoryMongo(mongoDB.Client(), "SportEquipmentBorrowing", "borrowing")
+	//init app
 	a := app.NewApp(user.NewUserService(userRepo), equipment.NewequipmentService(equipmentRepo), borrowing.NewBorrowingService(borrowingRepo))
 
 	router := gin.Default()
