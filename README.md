@@ -14,31 +14,29 @@
             /user
                 user.go
                 user_repository.go
+                user_repository_mongo.go
                 user_service.go
             /equipment
                 equipment.go
                 equipment_repository.go
+                equipment_repository_mongo.go
                 equipment_service.go
             /borrowing
                 borrowing.go
                 borrowing_repository.go
+                borrowing_repository_mongo.go
                 borrowing_service.go
-        /db
-            db.go
+        /datbase
+            mongo.go
         /http
             /handler
                 user_handler.go
                 equipment_handler.go
                 borrowing_handler.go
+            routes.go
             server.go
         /middleware
-            authentication_middleware.go
-        /util
-            hash.go
-    /scripts
-        migrate.go
-    /configs
-        config.yaml
+            authentication_middleware.go   
     go.mod
     go.sum
 ```
@@ -78,15 +76,7 @@ The Hexagonal Architecture, also known as Ports and Adapters, is a software arch
 
 ### Configuration
 
-Update the .env file in the configs directory with your specific configuration settings, such as database connection details.
-
-### Database Migration
-
-To perform database migration, run the migrate.go script in the scripts directory.
-
-   ```bash
-   go run scripts/migrate.go
-   ```
+Update the .env file in the sport-equipment-borrowing directory with your specific configuration settings, such as database connection details.
 
 ### Dependencies
 

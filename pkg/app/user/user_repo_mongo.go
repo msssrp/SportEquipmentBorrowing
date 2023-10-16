@@ -20,6 +20,7 @@ func NewUserRepositoryMongo(client *mongo.Client, dbName string, collectionName 
 	}
 }
 
+//Get
 func (r *userRepositoryMongo) GetAll() ([]*User, error) {
 	var users []*User
 
@@ -59,11 +60,13 @@ func (r *userRepositoryMongo) GetByID(id primitive.ObjectID) (*User, error) {
 	return &user, nil
 }
 
+//Post
 func (r *userRepositoryMongo) Create(user *User) error {
 	_, err := r.collection.InsertOne(context.Background(), user)
 	return err
 }
 
+//Put
 func (r *userRepositoryMongo) Update(user *User) error {
 	filter := bson.M{"_id": user.Id}
 	update := bson.M{
@@ -74,6 +77,7 @@ func (r *userRepositoryMongo) Update(user *User) error {
 	return err
 }
 
+//Delete
 func (r *userRepositoryMongo) DeleteByID(id primitive.ObjectID) error {
 	filter := bson.M{"_id": id}
 

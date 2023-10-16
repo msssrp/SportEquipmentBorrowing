@@ -21,43 +21,9 @@ func NewBorrowingRepositoryMongo(client *mongo.Client, dbName, collectionName st
 	}
 }
 
-func (r *borrowingRepositoryMongo) GetByID(id primitive.ObjectID) (*Borrowing, error) {
-	filter := bson.M{"_id": id}
+//implemented borrowing_repo by using mongo
 
-	var borrowing Borrowing
-	err := r.collection.FindOne(context.Background(), filter).Decode(&borrowing)
-	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, errors.New("borrowing not found")
-		}
-		return nil, err
-	}
-
-	return &borrowing, nil
-}
-
-func (r *borrowingRepositoryMongo) Create(borrowing *Borrowing) error {
-	_, err := r.collection.InsertOne(context.Background(), borrowing)
-	return err
-}
-
-func (r *borrowingRepositoryMongo) Update(borrowing *Borrowing) error {
-	filter := bson.M{"_id": borrowing.Id}
-	update := bson.M{
-		"$set": borrowing,
-	}
-
-	_, err := r.collection.UpdateOne(context.Background(), filter, update)
-	return err
-}
-
-func (r *borrowingRepositoryMongo) DeleteByID(id primitive.ObjectID) error {
-	filter := bson.M{"_id": id}
-
-	_, err := r.collection.DeleteOne(context.Background(), filter)
-	return err
-}
-
+//Get
 func (r *borrowingRepositoryMongo) GetAll() ([]*Borrowing, error) {
 	var borrowings []*Borrowing
 
@@ -80,6 +46,21 @@ func (r *borrowingRepositoryMongo) GetAll() ([]*Borrowing, error) {
 	}
 
 	return borrowings, nil
+}
+
+func (r *borrowingRepositoryMongo) GetByID(id primitive.ObjectID) (*Borrowing, error) {
+	filter := bson.M{"_id": id}
+
+	var borrowing Borrowing
+	err := r.collection.FindOne(context.Background(), filter).Decode(&borrowing)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, errors.New("borrowing not found")
+		}
+		return nil, err
+	}
+
+	return &borrowing, nil
 }
 
 func (r *borrowingRepositoryMongo) GetByUserID(userID primitive.ObjectID) ([]*Borrowing, error) {
@@ -130,4 +111,29 @@ func (r *borrowingRepositoryMongo) GetByEquipmentID(equipmentID primitive.Object
 	}
 
 	return borrowings, nil
+}
+
+//Post
+func (r *borrowingRepositoryMongo) Create(borrowing *Borrowing) error {
+	_, err := r.collection.InsertOne(context.Background(), borrowing)
+	return err
+}
+
+//Put
+func (r *borrowingRepositoryMongo) Update(borrowing *Borrowing) error {
+	filter := bson.M{"_id": borrowing.Id}
+	update := bson.M{
+		"$set": borrowing,
+	}
+
+	_, err := r.collection.UpdateOne(context.Background(), filter, update)
+	return err
+}
+
+//Delete
+func (r *borrowingRepositoryMongo) DeleteByID(id primitive.ObjectID) error {
+	filter := bson.M{"_id": id}
+
+	_, err := r.collection.DeleteOne(context.Background(), filter)
+	return err
 }

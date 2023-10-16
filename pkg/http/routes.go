@@ -34,6 +34,7 @@ func SetRoutes(router *gin.Engine, app *app.App) {
 	{
 		borrowingRoutes.GET("/:id", borrowingHandler.HandlerGetBorrowingByID)
 		borrowingRoutes.GET("/getByUser/:id", borrowingHandler.HandlerGetBorrowingsByUserID)
+		borrowingRoutes.GET("/getByEquipment/:id", borrowingHandler.HandlerGetBorrowingByEquipmentID)
 		borrowingRoutes.GET("", borrowingHandler.HandlerGetAllBorrowings)
 		borrowingRoutes.POST("", borrowingHandler.HandlerCreateBorrowing)
 		borrowingRoutes.PUT("/:id", borrowingHandler.HandlerUpdateBorrowing)

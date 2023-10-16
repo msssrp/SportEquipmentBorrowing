@@ -28,6 +28,78 @@ type BorrowingInput struct {
 	Status       string             `json:"status"`
 }
 
+//Get
+func (h *BorrowingHandler) HandlerGetAllBorrowings(c *gin.Context) {
+
+	borrowings, err := h.app.BorrowingService.GetAllBorrowings()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, borrowings)
+}
+
+func (h *BorrowingHandler) HandlerGetBorrowingByID(c *gin.Context) {
+	borrowingIDStr := c.Param("id")
+
+	borrowingID, err := primitive.ObjectIDFromHex(borrowingIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid borrowing ID"})
+		return
+	}
+
+	borrowing, err := h.app.BorrowingService.GetBorrowingByID(borrowingID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if borrowing == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Borrowing not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, borrowing)
+}
+
+func (h *BorrowingHandler) HandlerGetBorrowingsByUserID(c *gin.Context) {
+	userIDStr := c.Param("id")
+
+	userID, err := primitive.ObjectIDFromHex(userIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	borrowings, err := h.app.BorrowingService.GetBorrowingsByUserID(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, borrowings)
+}
+
+func (h *BorrowingHandler) HandlerGetBorrowingByEquipmentID(c *gin.Context) {
+	equipmentIDStr := c.Param("id")
+
+	equipmentID, err := primitive.ObjectIDFromHex(equipmentIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	borrowing, err := h.app.BorrowingService.GetBorrowingByEquipmentID(equipmentID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, borrowing)
+}
+
+//Post
 func (h *BorrowingHandler) HandlerCreateBorrowing(c *gin.Context) {
 	var borrowingInput BorrowingInput
 
@@ -54,6 +126,7 @@ func (h *BorrowingHandler) HandlerCreateBorrowing(c *gin.Context) {
 	c.JSON(http.StatusCreated, borrowing)
 }
 
+//Put
 func (h *BorrowingHandler) HandlerUpdateBorrowing(c *gin.Context) {
 	borrowingIDStr := c.Param("id")
 
@@ -87,6 +160,7 @@ func (h *BorrowingHandler) HandlerUpdateBorrowing(c *gin.Context) {
 	c.JSON(http.StatusOK, borrowing)
 }
 
+//Delete
 func (h *BorrowingHandler) HandlerDeleteBorrowing(c *gin.Context) {
 	borrowingIDStr := c.Param("id")
 
@@ -103,56 +177,4 @@ func (h *BorrowingHandler) HandlerDeleteBorrowing(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Borrowing deleted successfully"})
-}
-
-func (h *BorrowingHandler) HandlerGetBorrowingByID(c *gin.Context) {
-	borrowingIDStr := c.Param("id")
-
-	borrowingID, err := primitive.ObjectIDFromHex(borrowingIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid borrowing ID"})
-		return
-	}
-
-	borrowing, err := h.app.BorrowingService.GetBorrowingByID(borrowingID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	if borrowing == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Borrowing not found"})
-		return
-	}
-
-	c.JSON(http.StatusOK, borrowing)
-}
-
-func (h *BorrowingHandler) HandlerGetAllBorrowings(c *gin.Context) {
-
-	borrowings, err := h.app.BorrowingService.GetAllBorrowings()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, borrowings)
-}
-
-func (h *BorrowingHandler) HandlerGetBorrowingsByUserID(c *gin.Context) {
-	userIDStr := c.Param("id")
-
-	userID, err := primitive.ObjectIDFromHex(userIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
-		return
-	}
-
-	borrowings, err := h.app.BorrowingService.GetBorrowingsByUserID(userID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, borrowings)
 }

@@ -24,6 +24,7 @@ func NewequipmentService(equipmentRepo EquipmentRepository) EquipmentService {
 	}
 }
 
+//Get
 func (s *equipmentService) GetAllEquipments() ([]*Equipment, error) {
 	return s.equipmentRepo.GetAll()
 }
@@ -35,6 +36,7 @@ func (s *equipmentService) GetEquipmentByID(id primitive.ObjectID) (*Equipment, 
 	return s.equipmentRepo.GetByID(id)
 }
 
+//Post
 func (s *equipmentService) CreateEquipment(equipment *Equipment) error {
 	if equipment == nil {
 		return errors.New("equipment is null please pass the equipment infomations")
@@ -45,6 +47,7 @@ func (s *equipmentService) CreateEquipment(equipment *Equipment) error {
 	return s.equipmentRepo.Create(equipment)
 }
 
+//Put
 func (s *equipmentService) UpdateEquipment(equipment *Equipment) error {
 	if equipment == nil {
 		return errors.New("equipment is null, please provide equipment information")
@@ -81,6 +84,7 @@ func (s *equipmentService) UpdateEquipment(equipment *Equipment) error {
 	return s.equipmentRepo.Update(equipment)
 }
 
+//Delete
 func (s *equipmentService) DeleteEquipment(id primitive.ObjectID) error {
 	if id == primitive.NilObjectID {
 		return errors.New("invalid id please provide id")

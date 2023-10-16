@@ -19,15 +19,17 @@ func NewUserHandler(app *app.App) *UserHandler {
 }
 
 type UserInput struct {
-	Username     string `json:"username"`
-	Password     string `json:"password"`
-	Email        string `json:"email" `
-	F_name       string `json:"f_name"`
-	L_name       string `json:"l_name"`
-	Phone_number string `json:"phone_number"`
-	Address      string `json:"address"`
+	Username     string   `json:"username"`
+	Password     string   `json:"password"`
+	Email        string   `json:"email" `
+	F_name       string   `json:"f_name"`
+	L_name       string   `json:"l_name"`
+	Phone_number string   `json:"phone_number"`
+	Address      string   `json:"address"`
+	Roles        []string `json:"roles"`
 }
 
+//Get
 func (h *UserHandler) HandlerGetUsers(c *gin.Context) {
 	users, err := h.app.UserService.GetAllUsers()
 	if err != nil {
@@ -53,12 +55,17 @@ func (h *UserHandler) HandlerGetUserByID(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+//Post
 func (h *UserHandler) HandlerCreateUser(c *gin.Context) {
 	var userInput UserInput
 
 	if err := c.ShouldBindJSON(&userInput); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	if len(userInput.Roles) == 0 {
+		userInput.Roles = []string{"user"}
 	}
 
 	user := &user.User{
@@ -69,6 +76,7 @@ func (h *UserHandler) HandlerCreateUser(c *gin.Context) {
 		L_name:       userInput.L_name,
 		Phone_number: userInput.Phone_number,
 		Address:      userInput.Address,
+		Roles:        userInput.Roles,
 	}
 
 	err := h.app.UserService.CreateUser(user)
@@ -82,6 +90,7 @@ func (h *UserHandler) HandlerCreateUser(c *gin.Context) {
 
 }
 
+//Put
 func (h *UserHandler) HandlerUpdateUser(c *gin.Context) {
 	userIDStr := c.Param("id")
 
@@ -117,6 +126,7 @@ func (h *UserHandler) HandlerUpdateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+//Delete
 func (h *UserHandler) HandlerDeleteUser(c *gin.Context) {
 	userIDStr := c.Param("id")
 

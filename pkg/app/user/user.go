@@ -11,4 +11,5 @@ type User struct {
 	L_name       string             `json:"l_name" bson:"l_name"`
 	Phone_number string             `json:"phone_number" bson:"phone_number"`
 	Address      string             `json:"address" bson:"address"`
+	Roles        []string           `json:"roles" bson:"roles"`
 }

@@ -20,6 +20,7 @@ func NewEquipmentRepositoryMongo(client *mongo.Client, dbName string, collection
 	}
 }
 
+//Get
 func (r *equipmentRepositoryMongo) GetAll() ([]*Equipment, error) {
 	var equipments []*Equipment
 
@@ -59,11 +60,13 @@ func (r *equipmentRepositoryMongo) GetByID(id primitive.ObjectID) (*Equipment, e
 	return &equipment, nil
 }
 
+//Post
 func (r *equipmentRepositoryMongo) Create(equipment *Equipment) error {
 	_, err := r.collection.InsertOne(context.Background(), equipment)
 	return err
 }
 
+//Put
 func (r *equipmentRepositoryMongo) Update(equipment *Equipment) error {
 	filter := bson.M{"_id": equipment.Id}
 	update := bson.M{
@@ -74,6 +77,7 @@ func (r *equipmentRepositoryMongo) Update(equipment *Equipment) error {
 	return err
 }
 
+//Delete
 func (r equipmentRepositoryMongo) DeleteByID(id primitive.ObjectID) error {
 	filter := bson.M{"_id": id}
 

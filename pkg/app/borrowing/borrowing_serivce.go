@@ -7,12 +7,13 @@ import (
 )
 
 type BorrowingService interface {
+	GetAllBorrowings() ([]*Borrowing, error)
 	GetBorrowingByID(id primitive.ObjectID) (*Borrowing, error)
+	GetBorrowingsByUserID(userID primitive.ObjectID) ([]*Borrowing, error)
+	GetBorrowingByEquipmentID(equipmentID primitive.ObjectID) ([]*Borrowing, error)
 	CreateBorrowing(borrowing *Borrowing) error
 	UpdateBorrowing(borrowing *Borrowing) error
 	DeleteBorrowingByID(id primitive.ObjectID) error
-	GetAllBorrowings() ([]*Borrowing, error)
-	GetBorrowingsByUserID(userID primitive.ObjectID) ([]*Borrowing, error)
 }
 
 type borrowingService struct {
@@ -25,8 +26,15 @@ func NewBorrowingService(borrowingRepo BorrowingRepository) BorrowingService {
 	}
 }
 
+// serivce func
+
+//Get
+func (s *borrowingService) GetAllBorrowings() ([]*Borrowing, error) {
+	return s.borrowingRepo.GetAll()
+}
+
 func (s *borrowingService) GetBorrowingByID(id primitive.ObjectID) (*Borrowing, error) {
-	objectID, err := s.GetBorrowingID(id)
+	objectID, err := s.GetID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -34,6 +42,32 @@ func (s *borrowingService) GetBorrowingByID(id primitive.ObjectID) (*Borrowing, 
 	return s.borrowingRepo.GetByID(objectID)
 }
 
+func (s *borrowingService) GetBorrowingsByUserID(userID primitive.ObjectID) ([]*Borrowing, error) {
+	objectID, err := s.GetID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.borrowingRepo.GetByUserID(objectID)
+}
+
+func (s *borrowingService) GetBorrowingByEquipmentID(equipmentID primitive.ObjectID) ([]*Borrowing, error) {
+	objectID, err := s.GetID(equipmentID)
+	if err != nil {
+		return nil, err
+	}
+	return s.borrowingRepo.GetByEquipmentID(objectID)
+}
+
+func (s *borrowingService) GetID(id primitive.ObjectID) (primitive.ObjectID, error) {
+	if id == primitive.NilObjectID {
+		return primitive.NilObjectID, errors.New("invalid id please provide id")
+	}
+
+	return id, nil
+}
+
+//Post
 func (s *borrowingService) CreateBorrowing(borrowing *Borrowing) error {
 	if borrowing == nil {
 		return errors.New("borrowing is nil")
@@ -45,6 +79,7 @@ func (s *borrowingService) CreateBorrowing(borrowing *Borrowing) error {
 	return s.borrowingRepo.Create(borrowing)
 }
 
+//Put
 func (s *borrowingService) UpdateBorrowing(borrowing *Borrowing) error {
 	if borrowing == nil {
 		return errors.New("borrowing is nil")
@@ -78,40 +113,12 @@ func (s *borrowingService) UpdateBorrowing(borrowing *Borrowing) error {
 	return s.borrowingRepo.Update(existingBorrowing)
 }
 
+//Delete
 func (s *borrowingService) DeleteBorrowingByID(id primitive.ObjectID) error {
-	objectID, err := s.GetBorrowingID(id)
+	objectID, err := s.GetID(id)
 	if err != nil {
 		return err
 	}
 
 	return s.borrowingRepo.DeleteByID(objectID)
-}
-
-func (s *borrowingService) GetAllBorrowings() ([]*Borrowing, error) {
-	return s.borrowingRepo.GetAll()
-}
-
-func (s *borrowingService) GetBorrowingsByUserID(userID primitive.ObjectID) ([]*Borrowing, error) {
-	objectID, err := s.GetUserID(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	return s.borrowingRepo.GetByUserID(objectID)
-}
-
-func (s *borrowingService) GetBorrowingID(id primitive.ObjectID) (primitive.ObjectID, error) {
-	if id == primitive.NilObjectID {
-		return primitive.NilObjectID, errors.New("invalid id please provide id")
-	}
-
-	return id, nil
-}
-
-func (s *borrowingService) GetUserID(id primitive.ObjectID) (primitive.ObjectID, error) {
-	if id == primitive.NilObjectID {
-		return primitive.NilObjectID, errors.New("invalid id please provide id")
-	}
-
-	return id, nil
 }

@@ -24,6 +24,7 @@ func NewUserService(userRepo UserRepository) UserService {
 	}
 }
 
+//Get
 func (s *userService) GetAllUsers() ([]*User, error) {
 	return s.userRepo.GetAll()
 }
@@ -35,6 +36,7 @@ func (s *userService) GetUserByID(id primitive.ObjectID) (*User, error) {
 	return s.userRepo.GetByID(id)
 }
 
+//Post
 func (s *userService) CreateUser(user *User) error {
 	if user == nil {
 		return errors.New("user is null please pass the user infomations")
@@ -45,6 +47,7 @@ func (s *userService) CreateUser(user *User) error {
 	return s.userRepo.Create(user)
 }
 
+//Put
 func (s *userService) UpdateUser(user *User) error {
 	if user == nil {
 		return errors.New("user is null, please provide user information")
@@ -84,6 +87,7 @@ func (s *userService) UpdateUser(user *User) error {
 	return s.userRepo.Update(user)
 }
 
+//Delete
 func (s *userService) DeleteUser(id primitive.ObjectID) error {
 	if id == primitive.NilObjectID {
 		return errors.New("invalid id please provide id")
