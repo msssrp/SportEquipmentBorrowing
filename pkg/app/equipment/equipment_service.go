@@ -62,23 +62,23 @@ func (s *equipmentService) UpdateEquipment(equipment *Equipment) error {
 		return err
 	}
 
-	if equipment.Quantity_available != "" {
-		existingequipment.Quantity_available = equipment.Quantity_available
+	if equipment.Quantity_available == "" {
+		equipment.Quantity_available = existingequipment.Quantity_available
 	}
-	if equipment.Name != "" {
-		existingequipment.Name = equipment.Name
+	if equipment.Name == "" {
+		equipment.Name = existingequipment.Name
 	}
-	if equipment.Category != "" {
-		existingequipment.Category = equipment.Category
+	if equipment.Category == "" {
+		equipment.Category = existingequipment.Category
 	}
-	if equipment.Condition != "" {
-		existingequipment.Condition = equipment.Condition
+	if equipment.Condition == "" {
+		equipment.Condition = existingequipment.Condition
 	}
-	if equipment.Image_url != "" {
-		existingequipment.Image_url = equipment.Image_url
+	if equipment.Image_url == "" {
+		equipment.Image_url = existingequipment.Image_url
 	}
-	if equipment.Description != "" {
-		existingequipment.Description = equipment.Description
+	if equipment.Description == "" {
+		equipment.Description = existingequipment.Description
 	}
 
 	return s.equipmentRepo.Update(equipment)

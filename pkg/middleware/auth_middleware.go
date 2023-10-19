@@ -2,31 +2,50 @@ package middleware
 
 import (
 	"errors"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
+
+	"github.com/davecgh/go-spew/spew"
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
+	"github.com/msssrp/SportEquipmentBorrowing/function"
 )
 
 var (
 	ErrInvalidToken = errors.New("invalid token")
 )
 
-func JWTMiddleware(secretKey string) gin.HandlerFunc {
+type CustomClaims struct {
+	jwt.StandardClaims
+	UserID string `json:"user_id"`
+}
+
+func JWTMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		secret, err := function.GetDotEnv("SECRET")
+		if err != nil {
+			panic(err)
+		}
+
 		tokenString := extractTokenFromHeader(c.Request)
 		if tokenString == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 			return
 		}
 
-		token, err := verifyJWTToken(tokenString, secretKey)
+		token, err := verifyJWTToken(tokenString, secret)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 			return
 		}
 
-		c.Set("userID", token.Claims.(*CustomClaims).UserID)
+		// Check if the token is valid
+		if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
+			c.Set("userID", claims.UserID)
+		} else {
+			spew.Println("Invalid token")
+		}
+
 		c.Next()
 	}
 }
@@ -45,13 +64,14 @@ func extractTokenFromHeader(req *http.Request) string {
 	return strings.TrimSpace(splitToken[1])
 }
 
-func verifyJWTToken(tokenString, secretKey string) (*jwt.Token, error) {
-	return jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+func verifyJWTToken(tokenString string, secretKey string) (*jwt.Token, error) {
+
+	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secretKey), nil
 	})
-}
+	if err != nil {
+		return token, err
+	}
 
-type CustomClaims struct {
-	UserID string `json:"userID"`
-	jwt.StandardClaims
+	return token, nil
 }

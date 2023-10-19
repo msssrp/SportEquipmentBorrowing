@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -47,15 +48,26 @@ func (h *UserHandler) HandlerGetUsers(c *gin.Context) {
 }
 
 func (h *UserHandler) HandlerGetUserByID(c *gin.Context) {
+	userID, exist := c.Get("userID")
+	if !exist {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "cant get user id on token"})
+		return
+	}
 
-	userIDsrt := c.Param("id")
+	userIDStr, ok := userID.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "user ID is not a string"})
+		return
+	}
 
-	userID, err := primitive.ObjectIDFromHex(userIDsrt)
+	userIDHex, err := primitive.ObjectIDFromHex(userIDStr)
 	if err != nil {
+		fmt.Println("Error converting to ObjectID:", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
 		return
 	}
-	user, err := h.app.UserService.GetUserByID(userID)
+
+	user, err := h.app.UserService.GetUserByID(userIDHex)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -116,7 +128,7 @@ func (h *UserHandler) HandlerSignIn(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, token)
+	c.JSON(http.StatusOK, gin.H{"token": token})
 
 }
 
