@@ -9,5 +9,5 @@ type BorrowingRepository interface {
 	DeleteByID(id primitive.ObjectID) error
 	GetAll() ([]*Borrowing, error)
 	GetByUserID(userID primitive.ObjectID) ([]*Borrowing, error)
-	GetByEquipmentID(equipmentID primitive.ObjectID) ([]*Borrowing, error)
+	GetByEquipmentID(equipmentID primitive.ObjectID) (*Borrowing, error)
 }

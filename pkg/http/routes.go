@@ -16,7 +16,8 @@ func SetRoutes(router *gin.Engine, app *app.App) {
 	userRoutes := router.Group("/users")
 	{
 		userRoutes.GET("", middleware.JWTMiddleware(), userHandler.HandlerGetUsers)
-		userRoutes.GET("/byId", middleware.JWTMiddleware(), userHandler.HandlerGetUserByID)
+		userRoutes.GET("/byId", middleware.JWTMiddleware(), userHandler.HandlerGetUserByIDFromToken)
+		userRoutes.GET("/byID/:id", middleware.JWTMiddleware(), userHandler.HandlersGetUserByID)
 		userRoutes.POST("", middleware.RateLimiterMiddleware(), userHandler.HandlerCreateUser)
 		userRoutes.POST("/auth/signIn", userHandler.HandlerSignIn)
 		userRoutes.PUT("/:id", middleware.JWTMiddleware(), userHandler.HandlerUpdateUser)

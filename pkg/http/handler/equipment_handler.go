@@ -1,12 +1,15 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/msssrp/SportEquipmentBorrowing/pkg/app"
+
 	"github.com/msssrp/SportEquipmentBorrowing/pkg/app/equipment"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type EquipmentHandler struct {
@@ -35,7 +38,34 @@ func (h *EquipmentHandler) HandlerGetEquipments(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, equipments)
+
+	var response []gin.H
+
+	// Loop through each equipment
+	for _, equipment := range equipments {
+		// Get borrowing information by equipment ID
+		borrowing, err := h.app.BorrowingService.GetBorrowingByEquipmentID(equipment.Id)
+		if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
+			// Handle errors other than "not found"
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Prepare the equipment response
+		equipmentResponse := gin.H{
+			"equipment": equipment,
+		}
+
+		// If borrowing is found, include it in the response
+		if borrowing != nil {
+			equipmentResponse["borrowing"] = borrowing
+		}
+
+		// Append the equipment response to the overall response slice
+		response = append(response, equipmentResponse)
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 func (h *EquipmentHandler) HandlerGetEquipmentByID(c *gin.Context) {

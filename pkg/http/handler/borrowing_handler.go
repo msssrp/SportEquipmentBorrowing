@@ -25,6 +25,7 @@ type BorrowingInput struct {
 	Equipment_id primitive.ObjectID `json:"equipment_id" `
 	Borrow_date  time.Time          `json:"borrow_date" `
 	Return_date  time.Time          `json:"return_date" `
+	DaysLeft     int                `json:"days_left" form:"-"`
 	Status       string             `json:"status"`
 }
 
@@ -108,16 +109,25 @@ func (h *BorrowingHandler) HandlerCreateBorrowing(c *gin.Context) {
 		return
 	}
 
+	daysLeft := int(borrowingInput.Return_date.Sub(borrowingInput.Borrow_date).Hours() / 24)
+
 	borrowing := &borrowing.Borrowing{
 		Id:           primitive.NewObjectID(),
 		User_id:      borrowingInput.User_id,
 		Equipment_id: borrowingInput.Equipment_id,
 		Borrow_date:  borrowingInput.Borrow_date,
 		Return_date:  borrowingInput.Return_date,
+		DayLeft:      daysLeft,
 		Status:       borrowingInput.Status,
 	}
 
 	err := h.app.BorrowingService.CreateBorrowing(borrowing)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = h.app.EquipmentService.UpdateQuantity_availableToPending(borrowing.Equipment_id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

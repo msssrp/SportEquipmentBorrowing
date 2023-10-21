@@ -47,7 +47,7 @@ func (h *UserHandler) HandlerGetUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, users)
 }
 
-func (h *UserHandler) HandlerGetUserByID(c *gin.Context) {
+func (h *UserHandler) HandlerGetUserByIDFromToken(c *gin.Context) {
 	userID, exist := c.Get("userID")
 	if !exist {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "cant get user id on token"})
@@ -68,6 +68,21 @@ func (h *UserHandler) HandlerGetUserByID(c *gin.Context) {
 	}
 
 	user, err := h.app.UserService.GetUserByID(userIDHex)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}
+
+func (h *UserHandler) HandlersGetUserByID(c *gin.Context) {
+	userIDStr := c.Param("id")
+	userID, err := primitive.ObjectIDFromHex(userIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
+	}
+	user, err := h.app.UserService.GetUserByID(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

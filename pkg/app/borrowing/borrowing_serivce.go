@@ -10,7 +10,7 @@ type BorrowingService interface {
 	GetAllBorrowings() ([]*Borrowing, error)
 	GetBorrowingByID(id primitive.ObjectID) (*Borrowing, error)
 	GetBorrowingsByUserID(userID primitive.ObjectID) ([]*Borrowing, error)
-	GetBorrowingByEquipmentID(equipmentID primitive.ObjectID) ([]*Borrowing, error)
+	GetBorrowingByEquipmentID(equipmentID primitive.ObjectID) (*Borrowing, error)
 	CreateBorrowing(borrowing *Borrowing) error
 	UpdateBorrowing(borrowing *Borrowing) error
 	DeleteBorrowingByID(id primitive.ObjectID) error
@@ -51,7 +51,7 @@ func (s *borrowingService) GetBorrowingsByUserID(userID primitive.ObjectID) ([]*
 	return s.borrowingRepo.GetByUserID(objectID)
 }
 
-func (s *borrowingService) GetBorrowingByEquipmentID(equipmentID primitive.ObjectID) ([]*Borrowing, error) {
+func (s *borrowingService) GetBorrowingByEquipmentID(equipmentID primitive.ObjectID) (*Borrowing, error) {
 	objectID, err := s.GetID(equipmentID)
 	if err != nil {
 		return nil, err
@@ -73,7 +73,7 @@ func (s *borrowingService) CreateBorrowing(borrowing *Borrowing) error {
 		return errors.New("borrowing is nil")
 	}
 
-	if borrowing.User_id == primitive.NilObjectID || borrowing.Equipment_id == primitive.NilObjectID || borrowing.Status == "" || borrowing.Borrow_date.IsZero() || borrowing.Return_date.IsZero() {
+	if borrowing.User_id == primitive.NilObjectID || borrowing.Equipment_id == primitive.NilObjectID || borrowing.Status == "" || borrowing.Borrow_date.IsZero() || borrowing.Return_date.IsZero() || borrowing.DayLeft == 0 {
 		return errors.New("all the fields are required please provide all the fields")
 	}
 	return s.borrowingRepo.Create(borrowing)

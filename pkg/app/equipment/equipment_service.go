@@ -11,6 +11,7 @@ type EquipmentService interface {
 	GetEquipmentByID(id primitive.ObjectID) (*Equipment, error)
 	CreateEquipment(equipment *Equipment) error
 	UpdateEquipment(equipment *Equipment) error
+	UpdateQuantity_availableToPending(id primitive.ObjectID) error
 	DeleteEquipment(id primitive.ObjectID) error
 }
 
@@ -82,6 +83,10 @@ func (s *equipmentService) UpdateEquipment(equipment *Equipment) error {
 	}
 
 	return s.equipmentRepo.Update(equipment)
+}
+
+func (s *equipmentService) UpdateQuantity_availableToPending(id primitive.ObjectID) error {
+	return s.equipmentRepo.UpdateQuantityToPending(id)
 }
 
 //Delete

@@ -31,11 +31,11 @@ func (r *equipmentRepositoryMongo) GetAll() ([]*Equipment, error) {
 	defer cursor.Close(context.Background())
 
 	for cursor.Next(context.Background()) {
-		var user Equipment
-		if err := cursor.Decode(&user); err != nil {
+		var equipment Equipment
+		if err := cursor.Decode(&equipment); err != nil {
 			return nil, err
 		}
-		equipments = append(equipments, &user)
+		equipments = append(equipments, &equipment)
 	}
 
 	if err := cursor.Err(); err != nil {
@@ -71,6 +71,16 @@ func (r *equipmentRepositoryMongo) Update(equipment *Equipment) error {
 	filter := bson.M{"_id": equipment.Id}
 	update := bson.M{
 		"$set": equipment,
+	}
+
+	_, err := r.collection.UpdateOne(context.Background(), filter, update)
+	return err
+}
+
+func (r *equipmentRepositoryMongo) UpdateQuantityToPending(equipmentID primitive.ObjectID) error {
+	filter := bson.M{"_id": equipmentID}
+	update := bson.M{
+		"$set": bson.M{"quantity_available": "In use"},
 	}
 
 	_, err := r.collection.UpdateOne(context.Background(), filter, update)

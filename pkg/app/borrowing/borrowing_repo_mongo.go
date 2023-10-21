@@ -88,29 +88,19 @@ func (r *borrowingRepositoryMongo) GetByUserID(userID primitive.ObjectID) ([]*Bo
 	return borrowings, nil
 }
 
-func (r *borrowingRepositoryMongo) GetByEquipmentID(equipmentID primitive.ObjectID) ([]*Borrowing, error) {
+func (r *borrowingRepositoryMongo) GetByEquipmentID(equipmentID primitive.ObjectID) (*Borrowing, error) {
 	filter := bson.M{"equipment_id": equipmentID}
 
-	var borrowings []*Borrowing
-	cursor, err := r.collection.Find(context.Background(), filter)
+	var borrowing Borrowing
+	err := r.collection.FindOne(context.Background(), filter).Decode(&borrowing)
 	if err != nil {
-		return nil, err
-	}
-	defer cursor.Close(context.Background())
-
-	for cursor.Next(context.Background()) {
-		var borrowing Borrowing
-		if err := cursor.Decode(&borrowing); err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, err
 		}
-		borrowings = append(borrowings, &borrowing)
-	}
-
-	if err := cursor.Err(); err != nil {
 		return nil, err
 	}
 
-	return borrowings, nil
+	return &borrowing, nil
 }
 
 //Post

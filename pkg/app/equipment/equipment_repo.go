@@ -7,5 +7,6 @@ type EquipmentRepository interface {
 	GetByID(id primitive.ObjectID) (*Equipment, error)
 	Create(equipment *Equipment) error
 	Update(equipment *Equipment) error
+	UpdateQuantityToPending(id primitive.ObjectID) error
 	DeleteByID(id primitive.ObjectID) error
 }

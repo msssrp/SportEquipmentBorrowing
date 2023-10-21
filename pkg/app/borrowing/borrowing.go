@@ -12,5 +12,6 @@ type Borrowing struct {
 	Equipment_id primitive.ObjectID `json:"equipment_id" bson:"equipment_id"`
 	Borrow_date  time.Time          `json:"borrow_date" bson:"borrow_date"`
 	Return_date  time.Time          `json:"return_date" bson:"return_date"`
+	DayLeft      int                `json:"days_left" bson:"days_left"`
 	Status       string             `json:"status" bson:"status"`
 }
