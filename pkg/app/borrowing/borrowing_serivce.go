@@ -2,7 +2,6 @@ package borrowing
 
 import (
 	"errors"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -14,6 +13,7 @@ type BorrowingService interface {
 	CreateBorrowing(borrowing *Borrowing) error
 	UpdateBorrowing(borrowing *Borrowing) error
 	DeleteBorrowingByID(id primitive.ObjectID) error
+	ApproveBorrow(id primitive.ObjectID) error
 }
 
 type borrowingService struct {
@@ -73,10 +73,19 @@ func (s *borrowingService) CreateBorrowing(borrowing *Borrowing) error {
 		return errors.New("borrowing is nil")
 	}
 
-	if borrowing.User_id == primitive.NilObjectID || borrowing.Equipment_id == primitive.NilObjectID || borrowing.Status == "" || borrowing.Borrow_date.IsZero() || borrowing.Return_date.IsZero() || borrowing.DayLeft == 0 {
+	if borrowing.User_id == primitive.NilObjectID || borrowing.Equipment_id == primitive.NilObjectID || borrowing.Borrow_date.IsZero() || borrowing.Return_date.IsZero() || borrowing.DayLeft == 0 {
 		return errors.New("all the fields are required please provide all the fields")
 	}
 	return s.borrowingRepo.Create(borrowing)
+}
+
+func (s *borrowingService) ApproveBorrow(id primitive.ObjectID) error {
+	objectID, err := s.GetID(id)
+	if err != nil {
+		return err
+	}
+
+	return s.borrowingRepo.ApproveEquipmentBorrow(objectID)
 }
 
 //Put

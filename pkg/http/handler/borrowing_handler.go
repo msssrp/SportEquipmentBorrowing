@@ -29,6 +29,11 @@ type BorrowingInput struct {
 	Status       string             `json:"status"`
 }
 
+type Approve struct {
+	Id           primitive.ObjectID `json:"borrowing_id"`
+	Equipment_id primitive.ObjectID `json:"equipment_id"`
+}
+
 //Get
 func (h *BorrowingHandler) HandlerGetAllBorrowings(c *gin.Context) {
 
@@ -127,13 +132,35 @@ func (h *BorrowingHandler) HandlerCreateBorrowing(c *gin.Context) {
 		return
 	}
 
-	err = h.app.EquipmentService.UpdateQuantity_availableToPending(borrowing.Equipment_id)
+	err = h.app.EquipmentService.UpdateQuantity_available(borrowing.Equipment_id, "pending")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusCreated, borrowing)
+}
+
+func (h *BorrowingHandler) HandlerApproveBorrowing(c *gin.Context) {
+	var borrowingApproveInput Approve
+
+	if err := c.ShouldBindJSON(&borrowingApproveInput); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := h.app.BorrowingService.ApproveBorrow(borrowingApproveInput.Id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = h.app.EquipmentService.UpdateQuantity_available(borrowingApproveInput.Equipment_id, "In use")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Borrowing Approved"})
 }
 
 //Put

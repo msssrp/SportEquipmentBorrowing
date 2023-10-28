@@ -2,7 +2,9 @@ package handler
 
 import (
 	"errors"
+
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/msssrp/SportEquipmentBorrowing/pkg/app"
@@ -31,6 +33,17 @@ type EquipmentInput struct {
 	Image_url          string `json:"image_url"`
 }
 
+type EquipmentWithBorrowing struct {
+	*equipment.Equipment
+	Borrowing_id primitive.ObjectID `json:"borrowing_id,omitempty"`
+	User_id      primitive.ObjectID `json:"user_id,omitempty"`
+	Equipment_id primitive.ObjectID `json:"equipment_id,omitempty"`
+	Borrow_date  time.Time          `json:"borrow_date,omitempty"`
+	Return_date  time.Time          `json:"return_date,omitempty"`
+	DaysLeft     int                `json:"days_left,omitempty"`
+	Status       string             `json:"status,omitempty"`
+}
+
 //Get
 func (h *EquipmentHandler) HandlerGetEquipments(c *gin.Context) {
 	equipments, err := h.app.EquipmentService.GetAllEquipments()
@@ -39,7 +52,8 @@ func (h *EquipmentHandler) HandlerGetEquipments(c *gin.Context) {
 		return
 	}
 
-	var response []gin.H
+	// Create a slice to store equipment responses
+	var equipmentResponses []map[string]interface{}
 
 	// Loop through each equipment
 	for _, equipment := range equipments {
@@ -58,14 +72,26 @@ func (h *EquipmentHandler) HandlerGetEquipments(c *gin.Context) {
 
 		// If borrowing is found, include it in the response
 		if borrowing != nil {
-			equipmentResponse["borrowing"] = borrowing
+			equipmentWithBorrowing := &EquipmentWithBorrowing{
+				Equipment:    equipment,
+				Borrowing_id: borrowing.Id,
+				User_id:      borrowing.User_id,
+				Equipment_id: borrowing.Equipment_id,
+				Borrow_date:  borrowing.Borrow_date,
+				Return_date:  borrowing.Return_date,
+				DaysLeft:     borrowing.DayLeft,
+				Status:       borrowing.Status,
+			}
+
+			equipmentResponse["equipment"] = equipmentWithBorrowing
 		}
 
-		// Append the equipment response to the overall response slice
-		response = append(response, equipmentResponse)
+		// Append the equipment response to the slice
+		equipmentResponses = append(equipmentResponses, equipmentResponse)
 	}
 
-	c.JSON(http.StatusOK, response)
+	// Send the entire slice as a JSON response
+	c.JSON(http.StatusOK, equipmentResponses)
 }
 
 func (h *EquipmentHandler) HandlerGetEquipmentByID(c *gin.Context) {
@@ -82,6 +108,56 @@ func (h *EquipmentHandler) HandlerGetEquipmentByID(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, equipment)
+}
+
+func (h *EquipmentHandler) HandlerGetEquipmentBySearch(c *gin.Context) {
+	searchQuery := c.Query("query")
+
+	equipments, err := h.app.EquipmentService.GetEquipmentBySearch(searchQuery)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	var equipmentResponses []map[string]interface{}
+
+	// Loop through each equipment
+	for _, equipment := range equipments {
+		// Get borrowing information by equipment ID
+		borrowing, err := h.app.BorrowingService.GetBorrowingByEquipmentID(equipment.Id)
+		if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
+			// Handle errors other than "not found"
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+			return
+		}
+
+		// Prepare the equipment response
+		equipmentResponse := gin.H{
+			"equipment": equipment,
+		}
+
+		// If borrowing is found, include it in the response
+		if borrowing != nil {
+			equipmentWithBorrowing := &EquipmentWithBorrowing{
+				Equipment:    equipment,
+				Borrowing_id: borrowing.Id,
+				User_id:      borrowing.User_id,
+				Equipment_id: borrowing.Equipment_id,
+				Borrow_date:  borrowing.Borrow_date,
+				Return_date:  borrowing.Return_date,
+				DaysLeft:     borrowing.DayLeft,
+				Status:       borrowing.Status,
+			}
+
+			equipmentResponse["equipment"] = equipmentWithBorrowing
+		}
+
+		// Append the equipment response to the slice
+		equipmentResponses = append(equipmentResponses, equipmentResponse)
+	}
+
+	// Send the entire slice as a JSON response
+	c.JSON(http.StatusOK, equipmentResponses)
 }
 
 //Post

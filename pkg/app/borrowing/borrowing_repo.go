@@ -10,4 +10,5 @@ type BorrowingRepository interface {
 	GetAll() ([]*Borrowing, error)
 	GetByUserID(userID primitive.ObjectID) ([]*Borrowing, error)
 	GetByEquipmentID(equipmentID primitive.ObjectID) (*Borrowing, error)
+	ApproveEquipmentBorrow(borrowingId primitive.ObjectID) error
 }

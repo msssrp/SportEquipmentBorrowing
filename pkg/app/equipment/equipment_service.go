@@ -9,9 +9,10 @@ import (
 type EquipmentService interface {
 	GetAllEquipments() ([]*Equipment, error)
 	GetEquipmentByID(id primitive.ObjectID) (*Equipment, error)
+	GetEquipmentBySearch(searchQuery string) ([]*Equipment, error)
 	CreateEquipment(equipment *Equipment) error
 	UpdateEquipment(equipment *Equipment) error
-	UpdateQuantity_availableToPending(id primitive.ObjectID) error
+	UpdateQuantity_available(id primitive.ObjectID, command string) error
 	DeleteEquipment(id primitive.ObjectID) error
 }
 
@@ -35,6 +36,13 @@ func (s *equipmentService) GetEquipmentByID(id primitive.ObjectID) (*Equipment, 
 		return nil, errors.New("invalid id please provide id")
 	}
 	return s.equipmentRepo.GetByID(id)
+}
+
+func (s *equipmentService) GetEquipmentBySearch(searchQuery string) ([]*Equipment, error) {
+	if searchQuery == "" {
+		return nil, errors.New("no query come in please provide query")
+	}
+	return s.equipmentRepo.GetBySearch(searchQuery)
 }
 
 //Post
@@ -85,8 +93,8 @@ func (s *equipmentService) UpdateEquipment(equipment *Equipment) error {
 	return s.equipmentRepo.Update(equipment)
 }
 
-func (s *equipmentService) UpdateQuantity_availableToPending(id primitive.ObjectID) error {
-	return s.equipmentRepo.UpdateQuantityToPending(id)
+func (s *equipmentService) UpdateQuantity_available(id primitive.ObjectID, command string) error {
+	return s.equipmentRepo.UpdateQuantity(id, command)
 }
 
 //Delete

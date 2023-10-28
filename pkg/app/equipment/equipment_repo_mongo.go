@@ -60,6 +60,39 @@ func (r *equipmentRepositoryMongo) GetByID(id primitive.ObjectID) (*Equipment, e
 	return &equipment, nil
 }
 
+func (r *equipmentRepositoryMongo) GetBySearch(searchQuery string) ([]*Equipment, error) {
+	filter := bson.M{
+		"$or": []bson.M{
+			{"name": bson.M{"$regex": primitive.Regex{Pattern: searchQuery, Options: "i"}}},
+			{"quantity_available": bson.M{"$regex": primitive.Regex{Pattern: searchQuery, Options: "i"}}},
+			{"category": bson.M{"$regex": primitive.Regex{Pattern: searchQuery, Options: "i"}}},
+		},
+	}
+
+	// Execute the find query with the filter
+	cursor, err := r.collection.Find(context.Background(), filter)
+	if err != nil {
+		return nil, errors.New("not found")
+	}
+	defer cursor.Close(context.Background())
+
+	// Decode the results into a slice of Equipment
+	var results []*Equipment
+	for cursor.Next(context.Background()) {
+		var equipment Equipment
+		if err := cursor.Decode(&equipment); err != nil {
+			return nil, errors.New("gay")
+		}
+		results = append(results, &equipment)
+	}
+
+	if len(results) == 0 {
+		return nil, errors.New("equipment not found")
+	}
+
+	return results, nil
+}
+
 //Post
 func (r *equipmentRepositoryMongo) Create(equipment *Equipment) error {
 	_, err := r.collection.InsertOne(context.Background(), equipment)
@@ -77,10 +110,10 @@ func (r *equipmentRepositoryMongo) Update(equipment *Equipment) error {
 	return err
 }
 
-func (r *equipmentRepositoryMongo) UpdateQuantityToPending(equipmentID primitive.ObjectID) error {
+func (r *equipmentRepositoryMongo) UpdateQuantity(equipmentID primitive.ObjectID, command string) error {
 	filter := bson.M{"_id": equipmentID}
 	update := bson.M{
-		"$set": bson.M{"quantity_available": "In use"},
+		"$set": bson.M{"quantity_available": command},
 	}
 
 	_, err := r.collection.UpdateOne(context.Background(), filter, update)

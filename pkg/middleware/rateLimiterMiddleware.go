@@ -28,7 +28,7 @@ func RateLimiterMiddleware() gin.HandlerFunc {
 		mu.Unlock()
 
 		if !limiter.Allow() {
-			c.JSON(http.StatusTooManyRequests, gin.H{"error": "Rate limit exceeded"})
+			c.JSON(http.StatusTooManyRequests, gin.H{"error": "chill dude you cant create spam my g"})
 			c.Abort()
 			return
 		}

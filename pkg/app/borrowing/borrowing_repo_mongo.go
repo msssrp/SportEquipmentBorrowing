@@ -105,6 +105,10 @@ func (r *borrowingRepositoryMongo) GetByEquipmentID(equipmentID primitive.Object
 
 //Post
 func (r *borrowingRepositoryMongo) Create(borrowing *Borrowing) error {
+
+	if borrowing.Status == "" {
+		borrowing.Status = "pending"
+	}
 	_, err := r.collection.InsertOne(context.Background(), borrowing)
 	return err
 }
@@ -114,6 +118,16 @@ func (r *borrowingRepositoryMongo) Update(borrowing *Borrowing) error {
 	filter := bson.M{"_id": borrowing.Id}
 	update := bson.M{
 		"$set": borrowing,
+	}
+
+	_, err := r.collection.UpdateOne(context.Background(), filter, update)
+	return err
+}
+
+func (r *borrowingRepositoryMongo) ApproveEquipmentBorrow(borrowingId primitive.ObjectID) error {
+	filter := bson.M{"_id": borrowingId}
+	update := bson.M{
+		"$set": bson.M{"status": "approve"},
 	}
 
 	_, err := r.collection.UpdateOne(context.Background(), filter, update)

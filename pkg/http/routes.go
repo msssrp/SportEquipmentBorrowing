@@ -17,7 +17,7 @@ func SetRoutes(router *gin.Engine, app *app.App) {
 	{
 		userRoutes.GET("", middleware.JWTMiddleware(), userHandler.HandlerGetUsers)
 		userRoutes.GET("/byId", middleware.JWTMiddleware(), userHandler.HandlerGetUserByIDFromToken)
-		userRoutes.GET("/byID/:id", middleware.JWTMiddleware(), userHandler.HandlersGetUserByID)
+		userRoutes.GET("/byID/:id", userHandler.HandlersGetUserByID)
 		userRoutes.POST("", middleware.RateLimiterMiddleware(), userHandler.HandlerCreateUser)
 		userRoutes.POST("/auth/signIn", userHandler.HandlerSignIn)
 		userRoutes.PUT("/:id", middleware.JWTMiddleware(), userHandler.HandlerUpdateUser)
@@ -28,6 +28,7 @@ func SetRoutes(router *gin.Engine, app *app.App) {
 	{
 		equipmentRoutes.GET("", equipmentHandler.HandlerGetEquipments)
 		equipmentRoutes.GET("/:id", equipmentHandler.HandlerGetEquipmentByID)
+		equipmentRoutes.GET("/search", equipmentHandler.HandlerGetEquipmentBySearch)
 		equipmentRoutes.POST("", middleware.JWTMiddleware(), equipmentHandler.HandlerCreateEquipment)
 		equipmentRoutes.PUT("/:id", middleware.JWTMiddleware(), equipmentHandler.HandlerUpdateEquipment)
 		equipmentRoutes.DELETE("/:id", middleware.JWTMiddleware(), equipmentHandler.HandlerDeleteEquipment)
@@ -40,6 +41,7 @@ func SetRoutes(router *gin.Engine, app *app.App) {
 		borrowingRoutes.GET("/getByEquipment/:id", borrowingHandler.HandlerGetBorrowingByEquipmentID)
 		borrowingRoutes.GET("", borrowingHandler.HandlerGetAllBorrowings)
 		borrowingRoutes.POST("", middleware.JWTMiddleware(), borrowingHandler.HandlerCreateBorrowing)
+		borrowingRoutes.POST("/approveBorrowing", middleware.JWTMiddleware(), borrowingHandler.HandlerApproveBorrowing)
 		borrowingRoutes.PUT("/:id", middleware.JWTMiddleware(), borrowingHandler.HandlerUpdateBorrowing)
 		borrowingRoutes.DELETE("/:id", middleware.JWTMiddleware(), borrowingHandler.HandlerDeleteBorrowing)
 	}
