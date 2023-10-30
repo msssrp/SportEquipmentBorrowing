@@ -19,6 +19,7 @@ func SetRoutes(router *gin.Engine, app *app.App) {
 		userRoutes.GET("/byId", middleware.AccessTokenMiddleware(), middleware.JWTMiddleware(), userHandler.HandlerGetUserByIDFromToken)
 		userRoutes.GET("/byID/:id", userHandler.HandlersGetUserByID)
 		userRoutes.GET("/auth/session", middleware.AuthenticateSession(), userHandler.HandlerVerifySession)
+		userRoutes.GET("/auth/userRoles/:id", userHandler.HandlerGetUserRolesByID)
 		userRoutes.POST("", middleware.RateLimiterMiddleware(), userHandler.HandlerCreateUser)
 		userRoutes.POST("/auth/signIn", userHandler.HandlerSignIn)
 		userRoutes.POST("/auth/refreshToken", middleware.AccessTokenMiddleware(), middleware.JWTGetClaims(), userHandler.HanlderNewAccessToken)

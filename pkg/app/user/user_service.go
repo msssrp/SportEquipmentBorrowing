@@ -14,6 +14,7 @@ type UserService interface {
 	DeleteUser(id primitive.ObjectID) error
 	UserSignIn(username string, password string) (string, string, error)
 	NewAccessToken(userID string) (string, error)
+	GetUserRolesById(userID primitive.ObjectID) ([]string, error)
 }
 
 type userService struct {
@@ -36,6 +37,13 @@ func (s *userService) GetUserByID(id primitive.ObjectID) (*User, error) {
 		return nil, errors.New("id is null please provide id")
 	}
 	return s.userRepo.GetByID(id)
+}
+
+func (s *userService) GetUserRolesById(userID primitive.ObjectID) ([]string, error) {
+	if userID == primitive.NilObjectID {
+		return nil, errors.New("id not found please provide id")
+	}
+	return s.userRepo.GetUserRoles(userID)
 }
 
 //Post

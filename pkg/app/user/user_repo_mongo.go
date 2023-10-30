@@ -65,6 +65,17 @@ func (r *userRepositoryMongo) GetByID(id primitive.ObjectID) (*User, error) {
 	return &user, nil
 }
 
+func (r *userRepositoryMongo) GetUserRoles(userID primitive.ObjectID) ([]string, error) {
+	var user User
+	filter := bson.M{"_id": userID}
+	err := r.collection.FindOne(context.Background(), filter).Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+
+	return user.Roles, nil
+}
+
 //Post
 func (r *userRepositoryMongo) Create(user *User) error {
 	var existingUser User

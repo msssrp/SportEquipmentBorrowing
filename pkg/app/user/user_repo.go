@@ -10,4 +10,5 @@ type UserRepository interface {
 	DeleteByID(id primitive.ObjectID) error
 	SignIn(username string, password string) (string, string, error)
 	GenerateNewAccessToken(userID string) (string, error)
+	GetUserRoles(userID primitive.ObjectID) ([]string, error)
 }

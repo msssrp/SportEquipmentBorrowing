@@ -53,11 +53,7 @@ func (h *UserHandler) HandlerGetUserByIDFromToken(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "cant get user id on token"})
 		return
 	}
-	session, exist := c.Get("sessionToken")
-	if !exist {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "cant sesion token"})
-		return
-	}
+
 	userIDStr, ok := userID.(string)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "user ID is not a string"})
@@ -77,7 +73,23 @@ func (h *UserHandler) HandlerGetUserByIDFromToken(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"user": user, "session": session})
+	c.JSON(http.StatusOK, user)
+}
+
+func (h *UserHandler) HandlerGetUserRolesByID(c *gin.Context) {
+	userIDStr := c.Param("id")
+	userID, err := primitive.ObjectIDFromHex(userIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
+		return
+	}
+	roles, err := h.app.UserService.GetUserRolesById(userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"roles": roles})
 }
 
 func (h *UserHandler) HandlersGetUserByID(c *gin.Context) {
