@@ -200,14 +200,26 @@ func (h *BorrowingHandler) HandlerUpdateBorrowing(c *gin.Context) {
 //Delete
 func (h *BorrowingHandler) HandlerDeleteBorrowing(c *gin.Context) {
 	borrowingIDStr := c.Param("id")
-
+	equipmentIDStr := c.Param("equipmentID")
 	borrowingID, err := primitive.ObjectIDFromHex(borrowingIDStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid borrowing ID"})
 		return
 	}
 
+	equipmentID, err := primitive.ObjectIDFromHex(equipmentIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid borrowing ID"})
+		return
+	}
+
 	err = h.app.BorrowingService.DeleteBorrowingByID(borrowingID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = h.app.EquipmentService.UpdateQuantity_available(equipmentID, "available")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

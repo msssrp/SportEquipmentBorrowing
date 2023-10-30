@@ -53,7 +53,11 @@ func (h *UserHandler) HandlerGetUserByIDFromToken(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "cant get user id on token"})
 		return
 	}
-
+	session, exist := c.Get("sessionToken")
+	if !exist {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "cant sesion token"})
+		return
+	}
 	userIDStr, ok := userID.(string)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "user ID is not a string"})
@@ -73,7 +77,7 @@ func (h *UserHandler) HandlerGetUserByIDFromToken(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, gin.H{"user": user, "session": session})
 }
 
 func (h *UserHandler) HandlersGetUserByID(c *gin.Context) {
@@ -89,6 +93,10 @@ func (h *UserHandler) HandlersGetUserByID(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, user)
+}
+
+func (h *UserHandler) HandlerVerifySession(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"message": "successfully authenticate"})
 }
 
 //Post
@@ -131,7 +139,8 @@ func (h *UserHandler) HandlerSignIn(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	token, err := h.app.UserService.UserSignIn(signInInput.Username, signInInput.Password)
+
+	accessToken, refreshToken, err := h.app.UserService.UserSignIn(signInInput.Username, signInInput.Password)
 	if err != nil {
 		var errInvalidCredentials = errors.New("Invalid username or password")
 		if err == errInvalidCredentials {
@@ -143,8 +152,26 @@ func (h *UserHandler) HandlerSignIn(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	// Include both access and refresh tokens in the response
+	c.JSON(http.StatusOK, gin.H{"access_token": accessToken, "refresh_token": refreshToken})
+}
 
+func (h *UserHandler) HanlderNewAccessToken(c *gin.Context) {
+	userID, exist := c.Get("userID")
+	if !exist {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "cant get user id on token"})
+		return
+	}
+	userIDStr, ok := userID.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "user ID is not a string"})
+		return
+	}
+	newAccesToken, err := h.app.UserService.NewAccessToken(userIDStr)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+	}
+	c.JSON(http.StatusOK, gin.H{"newAccessToken": newAccesToken})
 }
 
 //Put

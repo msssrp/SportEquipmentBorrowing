@@ -91,30 +91,36 @@ func (r *userRepositoryMongo) Create(user *User) error {
 	return errors.New("username already taken")
 }
 
-func (r *userRepositoryMongo) SignIn(username string, password string) (string, error) {
+func (r *userRepositoryMongo) SignIn(username string, password string) (string, string, error) {
 	var user User
 	var errInvalidCredentials = errors.New("Invalid username or password")
 	filter := bson.M{"username": username}
 	err := r.collection.FindOne(context.Background(), filter).Decode(&user)
 	if err == mongo.ErrNoDocuments {
 		// User not found
-		return "", errInvalidCredentials
+		return "", "", errInvalidCredentials
 	}
-
 	// Compare hashed password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
 		// Passwords do not match
-		return "", errInvalidCredentials
+		return "", "", errInvalidCredentials
 	}
 
-	print(r.secretKey)
 	// Generate JWT token
-	token, err := generateJWTToken(user, []byte(r.secretKey))
+	accessToken, refreshToken, err := generateJWTToken(user, []byte(r.secretKey))
+	if err != nil {
+		return "", "", err
+	}
+
+	return accessToken, refreshToken, nil
+}
+
+func (r *userRepositoryMongo) GenerateNewAccessToken(userID string) (string, error) {
+	newAccessToken, err := generateNewAccessToken(userID, r.secretKey)
 	if err != nil {
 		return "", err
 	}
-
-	return token, nil
+	return newAccessToken, nil
 }
 
 //Put
@@ -138,20 +144,46 @@ func (r *userRepositoryMongo) DeleteByID(id primitive.ObjectID) error {
 
 //func
 // generateJWTToken generates a JWT token for the user.
-func generateJWTToken(user User, secretKey []byte) (string, error) {
-	claims := jwt.MapClaims{
-		"user_id":  user.Id.Hex(),
-		"username": user.Username,
-		"email":    user.Email,
+func generateJWTToken(user User, secretKey []byte) (string, string, error) {
+	accessClaims := jwt.MapClaims{
+		"user_id": user.Id.Hex(),
 		// Add more claims as needed
-		"exp": time.Now().Add(time.Hour * 24).Unix(), // Token expires in 24 hours
+		"exp": time.Now().Add(time.Minute * 30).Unix(), // Access token expires in 30 minutes
+	}
+
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
+	signedAccessToken, err := accessToken.SignedString(secretKey)
+	if err != nil {
+		return "", "", err
+	}
+
+	// Refresh token
+	refreshClaims := jwt.MapClaims{
+		"user_id": user.Id.Hex(),
+		"exp":     time.Now().Add(time.Hour * 12).Unix(), // Refresh token expires in 12 hours
+	}
+
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
+	signedRefreshToken, err := refreshToken.SignedString(secretKey)
+	if err != nil {
+		return "", "", err
+	}
+
+	return signedAccessToken, signedRefreshToken, nil
+}
+
+func generateNewAccessToken(userID string, secretKey []byte) (string, error) {
+
+	claims := jwt.MapClaims{
+		"user_id": userID,
+		"exp":     time.Now().Add(time.Minute * 30).Unix(), // Token expires in 30 minutes
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString(secretKey)
+	newAccesToken, err := token.SignedString([]byte(secretKey))
 	if err != nil {
 		return "", err
 	}
 
-	return signedToken, nil
+	return newAccesToken, nil
 }

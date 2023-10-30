@@ -12,7 +12,8 @@ type UserService interface {
 	CreateUser(user *User) error
 	UpdateUser(user *User) error
 	DeleteUser(id primitive.ObjectID) error
-	UserSignIn(username string, password string) (string, error)
+	UserSignIn(username string, password string) (string, string, error)
+	NewAccessToken(userID string) (string, error)
 }
 
 type userService struct {
@@ -48,11 +49,18 @@ func (s *userService) CreateUser(user *User) error {
 	return s.userRepo.Create(user)
 }
 
-func (s *userService) UserSignIn(username string, password string) (string, error) {
+func (s *userService) UserSignIn(username string, password string) (string, string, error) {
 	if username == "" || password == "" {
-		return "", errors.New("Please input username and password")
+		return "", "", errors.New("Please input username and password")
 	}
 	return s.userRepo.SignIn(username, password)
+}
+
+func (s *userService) NewAccessToken(userID string) (string, error) {
+	if userID == "" {
+		return "", errors.New("user id undefined")
+	}
+	return s.userRepo.GenerateNewAccessToken(userID)
 }
 
 //Put
