@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -64,39 +63,6 @@ func isAccessTokenExpired(tokenString string, secretKey string) bool {
 	}
 
 	return true
-}
-
-func AuthenticateSession() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		secret, err := function.GetDotEnv("SESSION_SECRET")
-		if err != nil {
-			panic(err)
-		}
-		shortSessionToken := c.GetHeader("sessionToken")
-		if shortSessionToken == "" {
-			shortSessionToken = c.Query("sessionToken")
-		}
-
-		// Verify the short session token
-		token, err := jwt.Parse(shortSessionToken, func(token *jwt.Token) (interface{}, error) {
-			// Check the signing method
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-			}
-
-			// You need to provide your own secret key for decoding the short session token
-			return []byte(secret), nil
-		})
-
-		if err != nil || !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid session token"})
-			c.Abort()
-			return
-		}
-
-		// Token is valid, proceed to the next middleware or handler
-		c.Next()
-	}
 }
 
 func JWTMiddleware() gin.HandlerFunc {

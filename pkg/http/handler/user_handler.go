@@ -107,10 +107,6 @@ func (h *UserHandler) HandlersGetUserByID(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func (h *UserHandler) HandlerVerifySession(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "successfully authenticate"})
-}
-
 //Post
 func (h *UserHandler) HandlerCreateUser(c *gin.Context) {
 	var userInput UserInput
