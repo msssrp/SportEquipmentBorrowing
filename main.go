@@ -30,8 +30,8 @@ func main() {
 	//init app
 	a := app.NewApp(user.NewUserService(userRepo), equipment.NewequipmentService(equipmentRepo), borrowing.NewBorrowingService(borrowingRepo))
 
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
-
 	router.Use(gin.Recovery(), gin.Logger())
 	router.Use(CORSMiddleware())
 	router.Use(TrustProxyHeaders())
